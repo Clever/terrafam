@@ -1,0 +1,3 @@
+example-role:
+  s3:
+    write: ["example-bucket"]
