@@ -5,3 +5,4 @@ example-group:
     read-and-write: ["example-table"]
   sns:
     write: ["example-category"]
+  custom: true

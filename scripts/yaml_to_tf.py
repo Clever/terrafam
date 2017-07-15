@@ -76,14 +76,16 @@ def sns(tf, principal, principal_type, requirements):
             tf["module"][module_name]["account"] = account
 
 def custom(tf, principal, principal_type):
-    resource_name = "{0}_custom_policy".format(principal)
-    if not "aws_iam_role_policy" in tf["resource"]:
-        tf["resource"]["aws_iam_role_policy"] = {}
-    tf["resource"]["aws_iam_role_policy"][resource_name] = {}
-    tf["resource"]["aws_iam_role_policy"][resource_name]["name"] = resource_name
-    tf["resource"]["aws_iam_role_policy"][resource_name]["role"] = principal
-    policy = '${{file("policies/{0}.policy")}}'.format(principal)
-    tf["resource"]["aws_iam_role_policy"][resource_name]["policy"] = policy
+    resource_name = "custom_policy"
+    policy_type = "aws_iam_{}_policy".format(principal_type)
+    if not policy_type in tf["resource"]:
+        tf["resource"][policy_type] = {}
+    tf["resource"][policy_type][resource_name] = {}
+    principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
+    tf["resource"][policy_type][resource_name]["name"] = resource_name
+    tf["resource"][policy_type][resource_name][principal_type] = principal_name
+    policy = '${{file("policies/{}/{}.policy")}}'.format(principal_type, principal_name)
+    tf["resource"][policy_type][resource_name]["policy"] = policy
 
 def generate_tf(data, principal_type):
     tf = {"module": {}, "resource": {}}

@@ -34,5 +34,7 @@ example-group:
 
 * Start in your terraform directory, where `aws.region` is defined (see [main.tf](main.tf)).
 * Define the `users.yml`, `roles.yml`, and `groups.yml` files.
-* Download and run [scripts/generate_tf.py](scripts/generate_tf.py). `{users,roles,groups}.tf.json` files are generated.
+* Make sure the `AWS_REGION` and `AWS_ACCOUNT_ID` environment variables are set.
+* Download and run [scripts/yaml_to_tf.py](scripts/yaml_to_tf.py). `{users,roles,groups}.tf.json` files are generated.
+* Define `custom` policies in the `policies` folder. A user with the name `example-user` would have a custom policy at `policies/user/example-user.policy`.
 * Run `terraform get`, `terraform plan` and `terraform apply` to add the resources to your AWS account.
