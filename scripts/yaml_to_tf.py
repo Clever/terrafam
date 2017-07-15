@@ -45,7 +45,7 @@ def dynamodb(tf, principal, principal_type, requirements):
     for access, tables in requirements.items():
         for table in tables:
             module_name = "{0}_dynamodb_{1}_policy".format(principal, table)
-            tf["module"][module_name] = { "source": "modules/dynamodb/{}".format(principal_type) }
+            tf["module"][module_name] = { "source": "git@github.com:Clever/terraform-iam.git//modules/dynamodb/{}".format(principal_type) }
             tf["module"][module_name]["table_name"] = table
             principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
             tf["module"][module_name]["name"] = principal_name
@@ -57,7 +57,7 @@ def s3(tf, principal, principal_type, requirements):
     for access, buckets in requirements.items():
         for bucket in buckets:
             module_name = "{0}_s3_{1}_policy".format(principal, bucket)
-            tf["module"][module_name] = { "source": "modules/s3/{}".format(principal_type) }
+            tf["module"][module_name] = { "source": "git@github.com:Clever/terraform-iam.git//modules/s3/{}".format(principal_type) }
             principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
             tf["module"][module_name]["name"] = principal_name
             tf["module"][module_name]["bucket_name"] = bucket
@@ -67,7 +67,7 @@ def sns(tf, principal, principal_type, requirements):
     for access, topics in requirements.items():
         for topic in topics:
             module_name = "{0}_sns_{1}_policy".format(principal, topic)
-            tf["module"][module_name] = { "source": "modules/sns/{}".format(principal_type) }
+            tf["module"][module_name] = { "source": "git@github.com:Clever/terraform-iam.git//modules/sns/{}".format(principal_type) }
             principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
             tf["module"][module_name]["name"] = principal_name
             tf["module"][module_name]["topic_name"] = topic
