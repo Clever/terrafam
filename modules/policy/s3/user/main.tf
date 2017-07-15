@@ -11,15 +11,38 @@ variable "access_level" {
   description = "Can be read, write, or read-and-write"
 }
 
-data "template_file" "s3_policy_template" {
-    template = "${file("templates/s3/${var.access_level}-bucket.tpl")}"
-    vars {
-        s3_arn = "arn:aws:s3:::${var.bucket_name}"
-    }
+data "aws_iam_policy_document" "read" {
+  statement {
+    actions = [
+      "s3:GetObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.bucket_name}/*"
+    ]
+  }
 }
 
-resource "aws_iam_user_policy" "s3_policy" {
-    name = "${var.user_name}_${var.access_level}_${var.bucket_name}_bucket_policy"
+data "aws_iam_policy_document" "write" {
+  statement {
+    actions = [
+      "s3:PutObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.bucket_name}/*"
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "s3_read_policy" {
+    name = "s3_read_${replace(var.bucket_name, "-", "_")}_bucket"
     user = "${var.user_name}"
-    policy = "${data.template_file.s3_policy_template.rendered}"
+    count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
+    policy = "${data.aws_iam_policy_document.read.json}"
+}
+
+resource "aws_iam_user_policy" "s3_write_policy" {
+    name = "s3_write_${replace(var.bucket_name, "-", "_")}_bucket"
+    user = "${var.user_name}"
+    count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
+    policy = "${data.aws_iam_policy_document.write.json}"
 }

@@ -11,15 +11,46 @@ variable "access_level" {
   description = "Can be read, write, or read-and-write"
 }
 
-data "template_file" "sns_policy_template" {
-    template = "${file("templates/sns/${var.access_level}-topic.tpl")}"
-    vars {
-        sns_arn = "arn:aws:sns:us-west-1:589690932525:${var.topic_name}"
-    }
+variable "region" {
+  type = "string"
 }
 
-resource "aws_iam_user_policy" "sns_policy" {
-    name = "${var.user_name}_${var.access_level}_${var.topic_name}_topic_policy"
+variable "account" {
+  type = "string"
+}
+
+data "aws_iam_policy_document" "read" {
+  statement {
+    actions = [
+      "Action": "sns:Subscribe",
+    ]
+    resources = [
+      "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "write" {
+  statement {
+    actions = [
+      "Action": "sns:Publish",
+    ]
+    resources = [
+      "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
+    ]
+  }
+}
+
+resource "aws_iam_user_policy" "sns_read_policy" {
+    name = "sns_read_${replace(var.topic_name, "-", "_")}_topic"
     user = "${var.user_name}"
-    policy = "${data.template_file.sns_policy_template.rendered}"
+    count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
+    policy = "${data.aws_iam_policy_document.read.json}"
+}
+
+resource "aws_iam_user_policy" "sns_write_policy" {
+    name = "sns_write_${replace(var.topic_name, "-", "_")}_topic"
+    user = "${var.user_name}"
+    count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
+    policy = "${data.aws_iam_policy_document.write.json}"
 }

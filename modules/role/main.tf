@@ -16,7 +16,17 @@ variable "description" {
 
 resource "aws_iam_role" "service" {
   name = "${var.role_name}"
-  assume_role_policy = "${var.assume_role_policy}"
+  assume_role_policy = "${data.aws_iam_policy_document.assume-role-policy.json}"
+}
+
+data "aws_iam_policy_document" "assume-role-policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
 }
 
 output "role_name" {
