@@ -5,3 +5,4 @@ example-user:
     read-and-write: ["example-table"]
   sns:
     read: ["example-topic"]
+  managed: ["IAMSelfManageServiceSpecificCredentials"]

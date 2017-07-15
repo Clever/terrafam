@@ -75,6 +75,18 @@ def sns(tf, principal, principal_type, requirements):
             tf["module"][module_name]["region"] = region
             tf["module"][module_name]["account"] = account
 
+def managed(tf, principal, principal_type, policy_name):
+    resource_name = "managed_policy"
+    policy_type = "aws_iam_{}_policy_attachment".format(principal_type)
+    if not policy_type in tf["resource"]:
+        tf["resource"][policy_type] = {}
+    tf["resource"][policy_type][resource_name] = {}
+    principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
+    tf["resource"][policy_type][resource_name]["policy_arn"] = resource_name
+    tf["resource"][policy_type][resource_name][principal_type] = principal_name
+    policy_arn = 'arn:aws:iam::aws:policy/{}'.format(policy_name)
+    tf["resource"][policy_type][resource_name]["policy_arn"] = policy_arn
+
 def custom(tf, principal, principal_type):
     resource_name = "custom_policy"
     policy_type = "aws_iam_{}_policy".format(principal_type)
@@ -106,6 +118,10 @@ def generate_tf(data, principal_type):
             if resource == "sns":
                 tables = values[resource]
                 sns(tf, principal, principal_type, tables)
+            if resource == "managed":
+                policy_names = values[resource]
+                for policy_name in policy_names:
+                    managed(tf, principal, principal_type, policy_name)
             if resource == "custom":
                 custom(tf, principal, principal_type)
     dump_tf_to_file("{}s.tf.json".format(principal_type), tf)

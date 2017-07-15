@@ -30,6 +30,10 @@ example-group:
     custom: true
 ```
 
+Currently, you can define `dynamodb`, `s3`, and `sns` resources, with `read`, `write`, or `read-and-write` permissions per table, bucket, and topic respectively.
+
+You can also add `managed` policies (i.e. defined by Amazon) by name, and `custom` policies, which you can specify in arbitrary JSON.
+
 # Usage
 
 * Start in your terraform directory, where `aws.region` is defined (see [main.tf](main.tf)).
