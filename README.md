@@ -1,5 +1,5 @@
-# terraform-iam
-`terraform-iam` makes it easy to create AWS IAM principals (users, roles, and groups) with limited permission to AWS resources. You define your users, roles, and groups, as well as their AWS access policies in terse YML configuration files, with sensible defaults.
+# terrafam
+`terrafam` makes it easy to create AWS IAM principals (users, roles, and groups) with limited permission to AWS resources. You define your users, roles, and groups, as well as their AWS access policies in terse YML configuration files, with sensible defaults.
 
 You can then generate and use terraform configuration to create the IAM resources.
 
