@@ -3,6 +3,8 @@
 
 You can then generate and use terraform configuration to create the IAM resources.
 
+The resulting access policies can serve as the basic IAM structure for your org; you can decorate with additional IAM resources in terraform, or manually.
+
 ## users.yml
 
 ```
@@ -28,6 +30,9 @@ example-group:
     custom: true
 ```
 
-Run `python scripts/generate_tf.py` and you'll get `{users,roles,groups}.tf.json`.
+# Usage
 
-From there, you can `terraform get`, `terraform plan` and `terraform apply`.
+* Start in your terraform directory, where `aws.region` is defined (see [main.tf](main.tf)).
+* Define the `users.yml`, `roles.yml`, and `groups.yml` files.
+* Download and run [scripts/generate_tf.py](scripts/generate_tf.py). `{users,roles,groups}.tf.json` files are generated.
+* Run `terraform get`, `terraform plan` and `terraform apply` to add the resources to your AWS account.
