@@ -5,8 +5,8 @@ import sys
 import os
 import argparse
 
-region = "us-east-1"
-account = "589690932525"
+region = os.environ["AWS_REGION"]
+account = os.environ["AWS_ACCOUNT_ID"]
 
 def dump_tf_to_file(filename, tf):
     with open(filename, 'w') as outfile:
