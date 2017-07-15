@@ -41,16 +41,16 @@ data "aws_iam_policy_document" "write" {
   }
 }
 
-resource "aws_iam_role_policy" "sns_read_policy" {
+resource "aws_iam_group_policy" "sns_read_policy" {
     name = "sns_read_${replace(var.topic_name, "-", "_")}_topic"
-    role = "${var.name}"
+    group = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.read.json}"
 }
 
-resource "aws_iam_role_policy" "sns_write_policy" {
+resource "aws_iam_group_policy" "sns_write_policy" {
     name = "sns_write_${replace(var.topic_name, "-", "_")}_topic"
-    role = "${var.name}"
+    group = "${var.name}"
     count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.write.json}"
 }

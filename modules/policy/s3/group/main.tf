@@ -2,7 +2,7 @@ variable "name" {
   type = "string"
 }
 
-variable "topic_name" {
+variable "bucket_name" {
   type = "string"
 }
 
@@ -11,21 +11,13 @@ variable "access_level" {
   description = "Can be read, write, or read-and-write"
 }
 
-variable "region" {
-  type = "string"
-}
-
-variable "account" {
-  type = "string"
-}
-
 data "aws_iam_policy_document" "read" {
   statement {
     actions = [
-      "sns:Subscribe"
+      "s3:GetObject"
     ]
     resources = [
-      "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
+      "arn:aws:s3:::${var.bucket_name}/*"
     ]
   }
 }
@@ -33,24 +25,24 @@ data "aws_iam_policy_document" "read" {
 data "aws_iam_policy_document" "write" {
   statement {
     actions = [
-      "sns:Publish"
+      "s3:PutObject"
     ]
     resources = [
-      "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
+      "arn:aws:s3:::${var.bucket_name}/*"
     ]
   }
 }
 
-resource "aws_iam_role_policy" "sns_read_policy" {
-    name = "sns_read_${replace(var.topic_name, "-", "_")}_topic"
-    role = "${var.name}"
+resource "aws_iam_group_policy" "s3_read_policy" {
+    name = "s3_read_${replace(var.bucket_name, "-", "_")}_bucket"
+    group = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.read.json}"
 }
 
-resource "aws_iam_role_policy" "sns_write_policy" {
-    name = "sns_write_${replace(var.topic_name, "-", "_")}_topic"
-    role = "${var.name}"
+resource "aws_iam_group_policy" "s3_write_policy" {
+    name = "s3_write_${replace(var.bucket_name, "-", "_")}_bucket"
+    group = "${var.name}"
     count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.write.json}"
 }

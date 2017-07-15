@@ -1,4 +1,4 @@
-variable "user_name" {
+variable "name" {
   type = "string"
 }
 
@@ -35,14 +35,14 @@ data "aws_iam_policy_document" "write" {
 
 resource "aws_iam_role_policy" "s3_read_policy" {
     name = "s3_read_${replace(var.bucket_name, "-", "_")}_bucket"
-    user = "${var.user_name}"
+    user = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.read.json}"
 }
 
 resource "aws_iam_user_policy" "s3_write_policy" {
     name = "s3_write_${replace(var.bucket_name, "-", "_")}_bucket"
-    user = "${var.user_name}"
+    user = "${var.name}"
     count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.write.json}"
 }

@@ -1,4 +1,4 @@
-variable "user_name" {
+variable "name" {
   type = "string"
 }
 
@@ -22,7 +22,7 @@ variable "account" {
 data "aws_iam_policy_document" "read" {
   statement {
     actions = [
-      "Action": "sns:Subscribe",
+      "sns:Subscribe"
     ]
     resources = [
       "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "read" {
 data "aws_iam_policy_document" "write" {
   statement {
     actions = [
-      "Action": "sns:Publish",
+      "sns:Publish"
     ]
     resources = [
       "arn:aws:sns:${var.region}:${var.account}:${var.topic_name}"
@@ -43,14 +43,14 @@ data "aws_iam_policy_document" "write" {
 
 resource "aws_iam_user_policy" "sns_read_policy" {
     name = "sns_read_${replace(var.topic_name, "-", "_")}_topic"
-    user = "${var.user_name}"
+    user = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.read.json}"
 }
 
 resource "aws_iam_user_policy" "sns_write_policy" {
     name = "sns_write_${replace(var.topic_name, "-", "_")}_topic"
-    user = "${var.user_name}"
+    user = "${var.name}"
     count = "${replace(var.access_level, "read-and", "") == "write" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.write.json}"
 }

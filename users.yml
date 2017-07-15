@@ -1,4 +1,4 @@
-example-role:
+example-user:
   s3:
     write: ["example-bucket"]
   dynamodb:

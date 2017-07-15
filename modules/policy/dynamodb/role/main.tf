@@ -1,4 +1,4 @@
-variable "role_name" {
+variable "name" {
   type = "string"
 }
 
@@ -52,14 +52,14 @@ data "aws_iam_policy_document" "write" {
 
 resource "aws_iam_role_policy" "dynamodb_read_policy" {
     name = "dynamodb_read_${replace(var.table_name, "-", "_")}_table"
-    role = "${var.role_name}"
+    role = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.read.json}"
 }
 
 resource "aws_iam_role_policy" "dynamodb_write_policy" {
     name = "dynamodb_write_${replace(var.table_name, "-", "_")}_table"
-    role = "${var.role_name}"
+    role = "${var.name}"
     count = "${replace(var.access_level, "read-and-", "") == "write" ? 1 : 0}"
     policy = "${data.aws_iam_policy_document.write.json}"
 }

@@ -12,75 +12,103 @@ def dump_tf_to_file(filename, tf):
     with open(filename, 'w') as outfile:
         json.dump(tf, outfile, indent=4, separators=(',', ': '))
 
-def iam_role(tf, service):
-    module_name = "{0}_role".format(service.replace("-", "_"))
-    tf["module"][module_name] = { "source": "modules/role" }
-    tf["module"][module_name]["role_name"] = service
-    tf["module"][module_name]["assume_role_policy"] = '${file("policies/service-assume-role.policy")}'
-    tf["module"][module_name]["description"] = service
+def iam_user(tf, user):
+    if not "aws_iam_user" in tf["resource"]:
+        tf["resource"]["aws_iam_user"] = {}
+    tf["resource"]["aws_iam_user"][user] = {"name": user}
 
-def dynamodb(tf, service, requirements):
+def iam_role(tf, role):
+    if not "aws_iam_role" in tf["resource"]:
+        tf["resource"]["aws_iam_role"] = {}
+        tf["data"] = {}
+        tf["data"]["aws_iam_policy_document"] = {}
+    tf["resource"]["aws_iam_role"][role] = {"name": role}
+    tf["data"]["aws_iam_policy_document"]["{}_assume_role_policy".format(role)] = {
+        "policy_id": "",
+        "statement": {
+            "actions": ["sts:AssumeRole"],
+            "principals": {
+                "type": "Service",
+                "identifiers": ["ec2.amazonaws.com"]
+            }
+        }
+    }
+    assume_role_location = '${data.aws_iam_policy_document.' + role + '_assume_role_policy.json}'
+    tf["resource"]["aws_iam_role"][role]["assume_role_policy"] = assume_role_location
+
+def iam_group(tf, group):
+    if not "aws_iam_group" in tf["resource"]:
+        tf["resource"]["aws_iam_group"] = {}
+    tf["resource"]["aws_iam_group"][group] = {"name": group}
+
+def dynamodb(tf, principal, principal_type, requirements):
     for access, tables in requirements.items():
         for table in tables:
-            module_name = "{0}_dynamodb_{1}_policy".format(service.replace("-", "_"), table.replace("-", "_"))
-            tf["module"][module_name] = { "source": "modules/policy/dynamodb/role" }
+            module_name = "{0}_dynamodb_{1}_policy".format(principal, table)
+            tf["module"][module_name] = { "source": "modules/policy/dynamodb/{}".format(principal_type) }
             tf["module"][module_name]["table_name"] = table
-            module_role_name = "${{module.{0}_role.name}}".format(service.replace("-", "_"))
-            tf["module"][module_name]["role_name"] = module_role_name
+            principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
+            tf["module"][module_name]["name"] = principal_name
             tf["module"][module_name]["access_level"] = access
             tf["module"][module_name]["region"] = region
             tf["module"][module_name]["account"] = account
 
-def s3(tf, service, requirements):
+def s3(tf, principal, principal_type, requirements):
     for access, buckets in requirements.items():
         for bucket in buckets:
-            module_name = "{0}_s3_{1}_policy".format(service.replace("-", "_"), bucket.replace("-", "_"))
-            tf["module"][module_name] = { "source": "modules/policy/s3/role" }
-            module_role_name = "${{module.{0}_role.name}}".format(service.replace("-", "_"))
-            tf["module"][module_name]["role_name"] = module_role_name
+            module_name = "{0}_s3_{1}_policy".format(principal, bucket)
+            tf["module"][module_name] = { "source": "modules/policy/s3/{}".format(principal_type) }
+            principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
+            tf["module"][module_name]["name"] = principal_name
             tf["module"][module_name]["bucket_name"] = bucket
             tf["module"][module_name]["access_level"] = access
 
-def sns(tf, service, requirements):
+def sns(tf, principal, principal_type, requirements):
     for access, topics in requirements.items():
         for topic in topics:
-            module_name = "{0}_sns_{1}_policy".format(service.replace("-", "_"), topic.replace("-", "_"))
-            tf["module"][module_name] = { "source": "modules/policy/sns/role" }
-            module_role_name = "${{module.{0}_role.name}}".format(service.replace("-", "_"))
-            tf["module"][module_name]["role_name"] = module_role_name
+            module_name = "{0}_sns_{1}_policy".format(principal, topic)
+            tf["module"][module_name] = { "source": "modules/policy/sns/{}".format(principal_type) }
+            principal_name =  "${{aws_iam_{}.{}.name}}".format(principal_type, principal)
+            tf["module"][module_name]["name"] = principal_name
             tf["module"][module_name]["topic_name"] = topic
             tf["module"][module_name]["access_level"] = access
             tf["module"][module_name]["region"] = region
             tf["module"][module_name]["account"] = account
 
-def custom(tf, service):
-    resource_name = "{0}_custom_policy".format(service.replace("-", "_"))
+def custom(tf, principal, principal_type):
+    resource_name = "{0}_custom_policy".format(principal)
     if not "aws_iam_role_policy" in tf["resource"]:
         tf["resource"]["aws_iam_role_policy"] = {}
     tf["resource"]["aws_iam_role_policy"][resource_name] = {}
     tf["resource"]["aws_iam_role_policy"][resource_name]["name"] = resource_name
-    tf["resource"]["aws_iam_role_policy"][resource_name]["role"] = service
-    policy = '${{file("policies/{0}.policy")}}'.format(service)
+    tf["resource"]["aws_iam_role_policy"][resource_name]["role"] = principal
+    policy = '${{file("policies/{0}.policy")}}'.format(principal)
     tf["resource"]["aws_iam_role_policy"][resource_name]["policy"] = policy
 
-def generate_tf(data, filename):
+def generate_tf(data, principal_type):
     tf = {"module": {}, "resource": {}}
-    for service, values in sorted(data.items()):
-        iam_role(tf, service)
+    for principal, values in sorted(data.items()):
+        if principal_type == "user":
+            iam_user(tf, principal)
+        if principal_type == "role":
+            iam_role(tf, principal)
+        if principal_type == "group":
+            iam_group(tf, principal)
         for resource in values:
             if resource == "s3":
                 requirements = values[resource]
-                s3(tf, service, requirements)
+                s3(tf, principal, principal_type, requirements)
             if resource == "dynamodb":
                 tables = values[resource]
-                dynamodb(tf, service, tables)
+                dynamodb(tf, principal, principal_type, tables)
             if resource == "sns":
                 tables = values[resource]
-                sns(tf, service, tables)
+                sns(tf, principal, principal_type, tables)
             if resource == "custom":
-                custom(tf, service)
-    dump_tf_to_file(filename, tf)
+                custom(tf, principal, principal_type)
+    dump_tf_to_file("{}s.tf.json".format(principal_type), tf)
 
-stream = open("roles.yml", "r")
-for data in yaml.load_all(stream):
-    generate_tf(data, "roles.tf.json")
+for p in ["user", "role", "group"]:
+    stream = open(p + "s.yml", "r")
+    for data in yaml.load_all(stream):
+        generate_tf(data, p)
