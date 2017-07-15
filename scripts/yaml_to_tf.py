@@ -5,6 +5,9 @@ import sys
 import os
 import argparse
 
+region = "us-east-1"
+account = "589690932525"
+
 def dump_tf_to_file(filename, tf):
     with open(filename, 'w') as outfile:
         json.dump(tf, outfile, indent=4, separators=(',', ': '))
@@ -25,6 +28,8 @@ def dynamodb(tf, service, requirements):
             module_role_name = "${{module.{0}_role.name}}".format(service.replace("-", "_"))
             tf["module"][module_name]["role_name"] = module_role_name
             tf["module"][module_name]["access_level"] = access
+            tf["module"][module_name]["region"] = region
+            tf["module"][module_name]["account"] = account
 
 def s3(tf, service, requirements):
     for access, buckets in requirements.items():
@@ -45,6 +50,8 @@ def sns(tf, service, requirements):
             tf["module"][module_name]["role_name"] = module_role_name
             tf["module"][module_name]["topic_name"] = topic
             tf["module"][module_name]["access_level"] = access
+            tf["module"][module_name]["region"] = region
+            tf["module"][module_name]["account"] = account
 
 def custom(tf, service):
     resource_name = "{0}_custom_policy".format(service.replace("-", "_"))

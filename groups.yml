@@ -1,7 +1,7 @@
-example-user:
+example-group:
   s3:
     write: ["example-bucket"]
   dynamodb:
     read-and-write: ["example-table"]
   sns:
-    read: ["example-topic"]
+    write: ["example-category"]

@@ -1,0 +1,33 @@
+{
+    "resource": {},
+    "module": {
+        "example_role_role": {
+            "assume_role_policy": "${file(\"policies/service-assume-role.policy\")}",
+            "source": "modules/role",
+            "role_name": "example-role",
+            "description": "example-role"
+        },
+        "example_role_sns_example_topic_policy": {
+            "account": "589690932525",
+            "access_level": "read",
+            "region": "us-east-1",
+            "topic_name": "example-topic",
+            "source": "modules/policy/sns/role",
+            "role_name": "${module.example_role_role.name}"
+        },
+        "example_role_dynamodb_example_table_policy": {
+            "account": "589690932525",
+            "access_level": "read-and-write",
+            "region": "us-east-1",
+            "source": "modules/policy/dynamodb/role",
+            "role_name": "${module.example_role_role.name}",
+            "table_name": "example-table"
+        },
+        "example_role_s3_example_bucket_policy": {
+            "source": "modules/policy/s3/role",
+            "bucket_name": "example-bucket",
+            "role_name": "${module.example_role_role.name}",
+            "access_level": "write"
+        }
+    }
+}
