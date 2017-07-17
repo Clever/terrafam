@@ -1,6 +1,6 @@
 example-role:
   s3:
-    write: ["example-bucket"]
+    read: ["example-bucket"]
   dynamodb:
     read-and-write: ["example-table"]
   sns:
