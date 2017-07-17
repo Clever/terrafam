@@ -14,6 +14,15 @@ variable "access_level" {
 data "aws_iam_policy_document" "read" {
   statement {
     actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.bucket_name}"
+    ]
+  }
+  statement {
+    actions = [
       "s3:GetObject"
     ]
     resources = [
@@ -25,6 +34,14 @@ data "aws_iam_policy_document" "read" {
 data "aws_iam_policy_document" "write" {
   statement {
     actions = [
+      "s3:GetBucketLocation"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.bucket_name}"
+    ]
+  }
+  statement {
+    actions = [
       "s3:PutObject"
     ]
     resources = [
@@ -33,7 +50,7 @@ data "aws_iam_policy_document" "write" {
   }
 }
 
-resource "aws_iam_role_policy" "s3_read_policy" {
+resource "aws_iam_user_policy" "s3_read_policy" {
     name = "s3_read_${replace(var.bucket_name, "-", "_")}_bucket"
     user = "${var.name}"
     count = "${replace(var.access_level, "-and-write", "") == "read" ? 1 : 0}"

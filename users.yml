@@ -1,6 +1,6 @@
 example-user:
   s3:
-    write: ["example-bucket"]
+    read-and-write: ["example-bucket"]
   dynamodb:
     read-and-write: ["example-table"]
   sns:
