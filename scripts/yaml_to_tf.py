@@ -124,9 +124,10 @@ def generate_tf(data, principal_type):
                     managed(tf, principal, principal_type, policy_name)
             if resource == "custom":
                 custom(tf, principal, principal_type)
-    dump_tf_to_file("{}s.tf.json".format(principal_type), tf)
+    dump_tf_to_file("generated_{}s.tf.json".format(principal_type), tf)
 
 for p in ["user", "role", "group"]:
     stream = open(p + "s.yml", "r")
-    for data in yaml.load_all(stream):
-        generate_tf(data, p)
+    if os.path.isfile(filename):
+        for data in yaml.load_all(stream):
+            generate_tf(data, p)
