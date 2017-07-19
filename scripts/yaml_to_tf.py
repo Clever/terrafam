@@ -29,7 +29,7 @@ def iam_role(tf, role):
             "actions": ["sts:AssumeRole"],
             "principals": {
                 "type": "Service",
-                "identifiers": ["ec2.amazonaws.com"]
+                "identifiers": ["ec2.amazonaws.com", "ecs-tasks.amazonaws.com"]
             }
         }
     }
@@ -127,7 +127,8 @@ def generate_tf(data, principal_type):
     dump_tf_to_file("generated_{}s.tf.json".format(principal_type), tf)
 
 for p in ["user", "role", "group"]:
-    stream = open(p + "s.yml", "r")
+    filename = p + "s.yml"
     if os.path.isfile(filename):
+        stream = open(filename, "r")
         for data in yaml.load_all(stream):
             generate_tf(data, p)
