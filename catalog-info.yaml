@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terrafam
+  description: IAM modules and YML-based terraform configuration generator
+  owner: unknown
+spec:
+  type: unknown
+  lifecycle: production
+  owner: unknown
+  system: Clever
